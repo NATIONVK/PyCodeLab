@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0a0f1e">
+<title>PyCode Lab</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="brand"><span class="snake">🐍</span><div><h1>PyCode Lab</h1><p>Learn Python. Build your skills.</p></div></div>
+  <span class="offline">● OFFLINE READY</span>
+</header>
+<nav class="tabs">
+  <button class="tab active" data-page="home">⌂ Home</button>
+  <button class="tab" data-page="learn">▤ Learn</button>
+  <button class="tab" data-page="editor">⌘ Editor</button>
+  <button class="tab" data-page="quiz">✓ Quiz</button>
+  <button class="tab" data-page="notes">✎ Notes</button>
+</nav>
+<main>
+<section id="home" class="page active">
+  <div class="welcome card"><div class="eyebrow">YOUR PYTHON JOURNEY</div><h2>Code your first idea.</h2><p>Practice Python directly on your phone. Your lessons and notes work offline.</p><button class="primary" data-goto="editor">Open Python Editor →</button></div>
+  <div class="stats"><div class="stat card"><b>07</b><span>Starter lessons</span></div><div class="stat card"><b>100%</b><span>Offline lessons</span></div></div>
+  <h3>Continue learning</h3>
+  <button class="lesson-row card" data-goto="learn"><span class="lesson-icon">01</span><span><b>Python fundamentals</b><small>print, variables, data types</small></span><span>›</span></button>
+  <div class="notice">Tip: Run the sample code in the Editor, then change it and try again.</div>
+</section>
+<section id="learn" class="page">
+  <div class="section-head"><div><div class="eyebrow">LEARN PYTHON</div><h2>Starter lessons</h2></div></div>
+  <div id="lessonList" class="lesson-list"></div>
+  <article id="lessonDetail" class="card lesson-detail hidden"></article>
+</section>
+<section id="editor" class="page">
+  <div class="section-head"><div><div class="eyebrow">PYTHON 3.12</div><h2>Code Editor</h2></div><span class="pill">● Ready</span></div>
+  <div class="editor-card card">
+    <div class="editor-toolbar"><span><i></i> main.py</span><button id="resetCode" class="small-btn">Reset</button></div>
+    <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off">name = input("What is your name? ")
+print("Hello,", name)
+print("Welcome to PyCode Lab!")</textarea>
+    <label for="stdin">Input values <small>(one answer per line for input())</small></label>
+    <textarea id="stdin" class="input-box" rows="2" placeholder="Joy"></textarea>
+    <button id="run" class="primary run-btn">▶ Run Python</button>
+    <div class="output-head"><span>OUTPUT</span><button id="clearOutput" class="small-btn">Clear</button></div>
+    <pre id="output">Your output will appear here…</pre>
+  </div>
+  <p class="muted">Code runs on the embedded Python runtime. Avoid infinite loops and only run code you trust.</p>
+</section>
+<section id="quiz" class="page">
+  <div class="eyebrow">QUICK PRACTICE</div><h2>Python Quiz</h2>
+  <div id="quizCard" class="card quiz-card"></div>
+  <div id="quizResult" class="notice hidden"></div>
+</section>
+<section id="notes" class="page">
+  <div class="eyebrow">YOUR PERSONAL SPACE</div><h2>Study Notes</h2>
+  <div class="card notes-card"><label for="noteTitle">Title</label><input id="noteTitle" placeholder="e.g. Variables in Python"><label for="noteArea">Your notes</label><textarea id="noteArea" rows="9" placeholder="Write what you learned…"></textarea><div class="actions"><button id="saveNote" class="primary">Save note</button><button id="clearNote" class="secondary">Clear</button></div><p id="noteStatus" class="muted">Notes are stored on this device.</p></div>
+</section>
+</main>
+<footer>PyCode Lab <span>•</span> Learn by doing</footer>
+<script src="app.js"></script>
+</body>
+</html>
