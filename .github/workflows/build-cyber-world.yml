@@ -31,23 +31,51 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # GitHub-hosted Ubuntu images already include Android command-line tools.
+      # Avoid a second SDK bootstrap action, which was the failing step in run #14.
+      - name: Locate preinstalled Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          if [ ! -d "$SDK_ROOT" ]; then
+            echo "Android SDK directory not found: $SDK_ROOT"
+            exit 1
+          fi
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager was not found under $SDK_ROOT/cmdline-tools"
+            find "$SDK_ROOT" -maxdepth 4 -type f -name sdkmanager -print || true
+            exit 1
+          fi
+          CMDLINE_TOOLS="$(dirname "$SDKMANAGER")"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          echo "$CMDLINE_TOOLS" >> "$GITHUB_PATH"
+          echo "Using Android SDK: $SDK_ROOT"
+          "$SDKMANAGER" --version
 
       - name: Install Android SDK components
+        shell: bash
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
-          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          set -euo pipefail
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
 
       - name: Install matching Godot export templates
+        shell: bash
         run: |
-          mkdir -p "$HOME/.local/share/godot/export_templates/4.4.1.stable"
-          curl -L --fail             https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz             -o /tmp/godot-templates.tpz
+          set -euo pipefail
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.4.1.stable"
+          mkdir -p "$TEMPLATE_DIR"
+          curl --retry 3 --retry-delay 2 -L --fail             https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz             -o /tmp/godot-templates.tpz
           unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
-          cp /tmp/godot-templates/templates/* "$HOME/.local/share/godot/export_templates/4.4.1.stable/"
+          cp /tmp/godot-templates/templates/* "$TEMPLATE_DIR/"
 
       - name: Configure Godot Android export paths
+        shell: bash
         run: |
           mkdir -p "$HOME/.config/godot"
           cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
@@ -57,13 +85,16 @@ jobs:
           export/android/java_sdk_path = "$JAVA_HOME"
           EOF
 
-      - name: Import project
-        run: godot --headless --editor --path cyber-world --quit
+      - name: Validate project import
+        run: |
+          godot --version
+          godot --headless --editor --path cyber-world --quit
 
       - name: Export debug APK
         run: |
           mkdir -p build
-          godot --headless --path cyber-world             --export-debug "Android" build/HackerProtocol-CyberWorld-debug.apk
+          godot --headless --path cyber-world --export-debug "Android" build/HackerProtocol-CyberWorld-debug.apk
+          test -s build/HackerProtocol-CyberWorld-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
