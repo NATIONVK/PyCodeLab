@@ -35,7 +35,7 @@ func _update_value(screen_position: Vector2) -> void:
     var local_position := screen_position - global_position
     var center := size * 0.5
     var offset := local_position - center
-    var max_distance := min(size.x, size.y) * 0.36
+    var max_distance: float = minf(size.x, size.y) * 0.36
     value = (offset / max_distance).limit_length(1.0)
     queue_redraw()
 
