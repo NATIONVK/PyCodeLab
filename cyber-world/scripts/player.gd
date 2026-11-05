@@ -16,15 +16,22 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-        rotate_y(-event.relative.x * mouse_sensitivity)
-        camera_pitch = clamp(camera_pitch - event.relative.y * mouse_sensitivity, -1.15, 1.15)
-        pivot.rotation.x = camera_pitch
+        _rotate_camera(event.relative)
+    if event is InputEventScreenDrag:
+        var viewport_size := get_viewport().get_visible_rect().size
+        if event.position.x > viewport_size.x * 0.38 and event.position.y < viewport_size.y * 0.78:
+            _rotate_camera(event.relative)
     if event.is_action_pressed("ui_cancel"):
         Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     if event is InputEventMouseButton and event.pressed:
         Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     if event.is_action_pressed("ui_page_up"):
         toggle_camera()
+
+func _rotate_camera(relative_motion: Vector2) -> void:
+    rotate_y(-relative_motion.x * mouse_sensitivity)
+    camera_pitch = clamp(camera_pitch - relative_motion.y * mouse_sensitivity, -1.15, 1.15)
+    pivot.rotation.x = camera_pitch
 
 func toggle_camera() -> void:
     first_person = not first_person
@@ -39,8 +46,13 @@ func _physics_process(delta: float) -> void:
         velocity.y = jump_velocity
 
     var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+    var joystick := get_tree().get_first_node_in_group("mobile_joystick")
+    if joystick and joystick.has_method("get_value"):
+        var touch_input: Vector2 = joystick.get_value()
+        if touch_input.length() > 0.08:
+            input_dir = touch_input
     var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-    var speed := sprint_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
+    var speed := sprint_speed if Input.is_action_pressed("sprint") or Input.is_key_pressed(KEY_SHIFT) else walk_speed
     if direction:
         velocity.x = direction.x * speed
         velocity.z = direction.z * speed
