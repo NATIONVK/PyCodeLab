@@ -85,10 +85,22 @@ jobs:
           export/android/java_sdk_path = "$JAVA_HOME"
           EOF
 
-      - name: Validate project import
+      - name: Validate project import and script parsing
+        shell: bash
         run: |
+          set -euo pipefail
           godot --version
-          godot --headless --editor --path cyber-world --quit
+          set +e
+          godot --headless --editor --path cyber-world --quit 2>&1 | tee /tmp/godot-import.log
+          GODOT_EXIT=${PIPESTATUS[0]}
+          set -e
+          if [ "$GODOT_EXIT" -ne 0 ]; then
+            exit "$GODOT_EXIT"
+          fi
+          if grep -E "SCRIPT ERROR:|Parse Error:|Failed to load script" /tmp/godot-import.log; then
+            echo "Godot reported script parse/load errors."
+            exit 1
+          fi
 
       - name: Export debug APK
         run: |
