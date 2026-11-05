@@ -5,6 +5,8 @@ A mobile-first 3D cyberpunk open-world prototype by **NATIONVK**.
 ## Current prototype (v0.1.0)
 - 3D lab blockout scene
 - Character movement, sprint and jump
+- On-screen Android joystick, jump, sprint and interact buttons
+- Right-side touch-drag camera control
 - Third-person / first-person camera toggle (Page Up)
 - Workstation interaction (E)
 - Fictional node-sequence hacking puzzle
@@ -16,7 +18,8 @@ A mobile-first 3D cyberpunk open-world prototype by **NATIONVK**.
 - Space: jump
 - Mouse: look (click the game window to capture)
 - E: interact with workstation
-- Page Up: toggle camera
+- Page Up: toggle camera (keyboard)
+- Touch: left joystick to move; swipe the open right side to look; on-screen buttons for jump, sprint and interact
 - Esc: release mouse
 
 ## Build
@@ -28,7 +31,7 @@ The GitHub Actions workflow at `.github/workflows/build-cyber-world.yml` attempt
 All hacking is fictional, puzzle-based simulation contained inside the game. This prototype is not a real network intrusion tool.
 
 ## Roadmap
-1. Mobile touch controls and polished lab interactions
+1. Mobile touch controls polish and device testing
 2. Lab customization and persistent upgrades
 3. Virtual cyberspace level
 4. First streamed Nova City district
