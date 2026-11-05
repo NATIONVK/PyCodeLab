@@ -7,11 +7,11 @@ func open_terminal() -> void:
     var layer := scene_root.get_node_or_null("UI")
     if layer == null:
         return
-    var panel := layer.get_node_or_null("HackingPanel")
-    if panel:
-        panel.queue_free()
+    var existing_panel := layer.get_node_or_null("HackingPanel")
+    if existing_panel:
+        existing_panel.queue_free()
         return
-    panel = PanelContainer.new()
+    var panel := PanelContainer.new()
     panel.name = "HackingPanel"
     panel.set_anchors_preset(Control.PRESET_CENTER)
     panel.position = Vector2(-230, -125)
