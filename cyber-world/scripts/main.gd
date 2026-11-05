@@ -11,6 +11,12 @@ var theme_index := 0
 var upgrade_level := 1
 var objective_label: Label
 var status_label: Label
+var progression_label: Label
+var credits := 250
+var xp := 0
+var research_points := 0
+var training_completed := false
+var inventory: Array[String] = ["Basic Laptop", "USB Toolkit"]
 
 func _ready() -> void:
     _build_lab()
@@ -53,6 +59,21 @@ func _build_lab() -> void:
     _add_station_label("SERVER ROOM", Vector3(6.8, 3.2, -5.4))
     _add_station_label("AI RESEARCH", Vector3(-6.0, 2.65, -5.0))
     _add_station_label("EQUIPMENT STORAGE", Vector3(-6.0, 1.95, 1.4))
+    _add_interactive_station("server_room", Vector3(6.8, 1.0, -4.5), Vector3(2.0, 2.0, 1.8))
+    _add_interactive_station("ai_research", Vector3(-6.0, 1.0, -4.0), Vector3(2.4, 2.0, 2.0))
+    _add_interactive_station("equipment_storage", Vector3(-6.0, 1.0, 2.0), Vector3(2.2, 1.8, 1.8))
+
+func _add_interactive_station(station_id: String, at: Vector3, dimensions: Vector3) -> void:
+    var station := StaticBody3D.new()
+    station.name = station_id.capitalize()
+    station.position = at
+    station.set_meta("station_id", station_id)
+    var collision := CollisionShape3D.new()
+    var shape := BoxShape3D.new()
+    shape.size = dimensions
+    collision.shape = shape
+    station.add_child(collision)
+    add_child(station)
 
 func _add_station_label(caption: String, at: Vector3) -> void:
     var label := Label3D.new()
@@ -106,6 +127,11 @@ func _build_hud() -> void:
     status_label.position = Vector2(24, 108)
     status_label.add_theme_color_override("font_color", Color(0.35, 0.95, 0.75))
     hud.add_child(status_label)
+    progression_label = Label.new()
+    progression_label.position = Vector2(24, 138)
+    progression_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.35))
+    hud.add_child(progression_label)
+    _refresh_progression_hud()
 
     _build_lab_menu(hud)
     _build_mobile_controls(hud)
@@ -119,6 +145,8 @@ func _build_lab_menu(hud: Control) -> void:
     menu.add_child(_make_menu_button("UPGRADE LAB", _upgrade_lab))
     menu.add_child(_make_menu_button("SAVE PROGRESS", _save_progress))
     menu.add_child(_make_menu_button("LOAD PROGRESS", _load_progress))
+    menu.add_child(_make_menu_button("MISSION BOARD", _open_mission_board))
+    menu.add_child(_make_menu_button("INVENTORY", _open_inventory))
     hud.add_child(menu)
 
 func _make_menu_button(caption: String, callback: Callable) -> Button:
@@ -174,6 +202,87 @@ func _mobile_button_style(fill: Color) -> StyleBoxFlat:
     style.content_margin_right = 8
     return style
 
+func _open_panel(panel_name: String, heading: String, lines: Array[String]) -> void:
+    var layer := get_node_or_null("UI")
+    if layer == null:
+        return
+    var old_panel := layer.get_node_or_null("ProgressPanel")
+    if old_panel:
+        old_panel.queue_free()
+    var panel := PanelContainer.new()
+    panel.name = "ProgressPanel"
+    panel.set_anchors_preset(Control.PRESET_CENTER)
+    panel.position = Vector2(-230, -180)
+    panel.size = Vector2(460, 360)
+    var box := VBoxContainer.new()
+    panel.add_child(box)
+    var title := Label.new()
+    title.text = heading
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    box.add_child(title)
+    for line in lines:
+        var item := Label.new()
+        item.text = line
+        item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+        box.add_child(item)
+    var close := Button.new()
+    close.text = "CLOSE"
+    close.pressed.connect(func(): panel.queue_free())
+    box.add_child(close)
+    layer.add_child(panel)
+
+func _open_mission_board() -> void:
+    var training_text := "COMPLETED" if training_completed else "IN PROGRESS — activate the Main Workstation"
+    var lines: Array[String] = [
+        "1. FIRST CONTACT — " + training_text,
+        "   Reward: 100 XP + 100 Credits + Data Shard",
+        "2. HQ EXPANSION — " + ("COMPLETED" if upgrade_level > 1 else "Upgrade your lab once"),
+        "   Reward: Lab progression",
+        "3. RESEARCH INITIATIVE — " + str(research_points) + " Research Points",
+        "   Visit the AI Research station to earn research points.",
+        "CURRENT PROFILE: Level %d | XP %d | Credits %d" % [upgrade_level, xp, credits]
+    ]
+    _open_panel("Missions", "NOVA // MISSION BOARD", lines)
+
+func _open_inventory() -> void:
+    var lines: Array[String] = ["CREDITS: " + str(credits), "EQUIPPED / OWNED ITEMS:"]
+    for item in inventory:
+        lines.append("• " + item)
+    lines.append("RESEARCH POINTS: " + str(research_points))
+    _open_panel("Inventory", "HACKER INVENTORY", lines)
+
+func _refresh_progression_hud() -> void:
+    if is_instance_valid(progression_label):
+        progression_label.text = "XP %d  |  CREDITS %d  |  RESEARCH %d" % [xp, credits, research_points]
+
+func _on_simulation_completed() -> void:
+    if training_completed:
+        _update_status("Training already completed")
+        return
+    training_completed = true
+    xp += 100
+    credits += 100
+    inventory.append("Encrypted Data Shard")
+    _refresh_progression_hud()
+    _save_progress()
+    _update_status("First Contact complete: +100 XP, +100 Credits")
+
+func _on_station_interacted(station_id: String) -> void:
+    match station_id:
+        "server_room":
+            _open_panel("Server Room", "SERVER ROOM // STATUS", ["LOCAL SERVER: ONLINE", "SECURITY SIMULATION: READY", "Complete the Main Workstation training to unlock advanced server missions."])
+        "ai_research":
+            research_points += 1
+            if not inventory.has("NOVA Research Notes"):
+                inventory.append("NOVA Research Notes")
+            _refresh_progression_hud()
+            _save_progress()
+            _open_panel("AI Research", "NOVA AI // RESEARCH POD", ["Research scan complete.", "+1 Research Point", "NOVA Research Notes added to inventory."])
+        "equipment_storage":
+            _open_inventory()
+        _:
+            _update_status("Unknown station")
+
 func _cycle_theme() -> void:
     theme_index = (theme_index + 1) % THEME_COLORS.size()
     _apply_lab_theme()
@@ -193,7 +302,13 @@ func _upgrade_lab() -> void:
     if upgrade_level >= 5:
         _update_status("Maximum lab level reached")
         return
+    if credits < 100:
+        _update_status("Need 100 credits for lab upgrade")
+        return
+    credits -= 100
     upgrade_level += 1
+    xp += 25
+    _refresh_progression_hud()
     _rebuild_upgrade_visuals()
     _update_status("Lab upgraded")
     _save_progress()
@@ -215,6 +330,11 @@ func _save_progress() -> void:
     var config := ConfigFile.new()
     config.set_value("lab", "theme_index", theme_index)
     config.set_value("lab", "upgrade_level", upgrade_level)
+    config.set_value("profile", "credits", credits)
+    config.set_value("profile", "xp", xp)
+    config.set_value("profile", "research_points", research_points)
+    config.set_value("profile", "training_completed", training_completed)
+    config.set_value("profile", "inventory", inventory)
     var error := config.save(SAVE_PATH)
     if error == OK:
         _update_status("Progress saved on this device")
@@ -230,15 +350,25 @@ func _load_progress() -> void:
         _update_status("New lab profile")
         return
     theme_index = clampi(int(config.get_value("lab", "theme_index", 0)), 0, THEME_COLORS.size() - 1)
+    credits = maxi(0, int(config.get_value("profile", "credits", 250)))
+    xp = maxi(0, int(config.get_value("profile", "xp", 0)))
+    research_points = maxi(0, int(config.get_value("profile", "research_points", 0)))
+    training_completed = bool(config.get_value("profile", "training_completed", false))
+    var saved_inventory: Variant = config.get_value("profile", "inventory", ["Basic Laptop", "USB Toolkit"])
+    inventory.clear()
+    for saved_item in saved_inventory:
+        inventory.append(str(saved_item))
     upgrade_level = clampi(int(config.get_value("lab", "upgrade_level", 1)), 1, 5)
     _apply_lab_theme()
     _rebuild_upgrade_visuals()
+    _refresh_progression_hud()
     _update_status("Progress loaded")
 
 func _update_status(message: String) -> void:
     if is_instance_valid(status_label):
         var theme_names := ["CYAN", "VIOLET", "EMERALD"]
         status_label.text = "LAB LEVEL %d  |  THEME: %s  |  %s" % [upgrade_level, theme_names[theme_index], message]
+    _refresh_progression_hud()
     if is_instance_valid(objective_label):
         objective_label.text = "OBJECTIVE: Customize your HQ, upgrade equipment and save your progress."
 
