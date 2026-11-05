@@ -32,7 +32,13 @@ func open_terminal() -> void:
     var submit := Button.new()
     submit.text = "RUN SIMULATION"
     submit.pressed.connect(func():
-        feedback.text = "ACCESS GRANTED — +100 XP" if answer.text.strip_edges() == "1-2-3-4" else "SIMULATION FAILED — TRY AGAIN"
+        if answer.text.strip_edges() == "1-2-3-4":
+            feedback.text = "ACCESS GRANTED — MISSION REWARD UNLOCKED"
+            var root := get_tree().current_scene
+            if root and root.has_method("_on_simulation_completed"):
+                root._on_simulation_completed()
+        else:
+            feedback.text = "SIMULATION FAILED — TRY AGAIN"
     )
     box.add_child(submit)
     var close := Button.new()
