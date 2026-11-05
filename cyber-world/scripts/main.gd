@@ -141,6 +141,12 @@ func _build_mobile_controls(hud: Control) -> void:
     _add_action_button(hud, "JUMP", "jump", Vector2(-118, -205), Vector2(92, 62))
     _add_action_button(hud, "SPRINT", "sprint", Vector2(-225, -126), Vector2(92, 56))
     _add_action_button(hud, "USE", "interact", Vector2(-118, -126), Vector2(92, 56))
+    var camera_button := _make_menu_button("CAMERA", _toggle_camera)
+    camera_button.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+    camera_button.position = Vector2(-335, -126)
+    camera_button.size = Vector2(92, 56)
+    camera_button.custom_minimum_size = Vector2(92, 56)
+    hud.add_child(camera_button)
 
 func _add_action_button(hud: Control, caption: String, action: String, offset: Vector2, button_size: Vector2) -> void:
     var button := Button.new()
@@ -221,3 +227,8 @@ func _update_status(message: String) -> void:
         status_label.text = "LAB LEVEL %d  |  THEME: %s  |  %s" % [upgrade_level, theme_names[theme_index], message]
     if is_instance_valid(objective_label):
         objective_label.text = "OBJECTIVE: Customize your HQ, upgrade equipment and save your progress."
+
+func _toggle_camera() -> void:
+    var player := get_tree().get_first_node_in_group("player")
+    if player and player.has_method("toggle_camera"):
+        player.toggle_camera()
