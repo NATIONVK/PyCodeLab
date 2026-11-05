@@ -140,7 +140,7 @@ func _build_lab_menu(hud: Control) -> void:
     var menu := VBoxContainer.new()
     menu.set_anchors_preset(Control.PRESET_TOP_RIGHT)
     menu.position = Vector2(-190, 22)
-    menu.size = Vector2(166, 190)
+    menu.size = Vector2(166, 250)
     menu.add_child(_make_menu_button("CHANGE THEME", _cycle_theme))
     menu.add_child(_make_menu_button("UPGRADE LAB", _upgrade_lab))
     menu.add_child(_make_menu_button("SAVE PROGRESS", _save_progress))
