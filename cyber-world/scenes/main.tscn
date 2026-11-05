@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/player.gd" id="2"]
@@ -10,6 +10,26 @@ background_color = Color(0.012, 0.02, 0.055, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.25, 0.38, 0.62, 1)
 ambient_light_energy = 0.7
+
+[sub_resource type="BoxMesh" id="FloorMesh"]
+size = Vector3(24, 0.5, 24)
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(24, 0.5, 24)
+
+[sub_resource type="CapsuleShape3D" id="PlayerShape"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="PlayerMesh"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="BoxMesh" id="TerminalMesh"]
+size = Vector3(1.5, 2.4, 0.35)
+
+[sub_resource type="BoxShape3D" id="TerminalShape"]
+size = Vector3(1.5, 2.4, 0.35)
 
 [node name="CyberWorld" type="Node3D"]
 script = ExtResource("1")
@@ -26,22 +46,20 @@ shadow_enabled = true
 position = Vector3(0, -0.25, 0)
 
 [node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
-mesh = BoxMesh.new()
-scale = Vector3(24, 0.5, 24)
+mesh = SubResource("FloorMesh")
 
 [node name="FloorCollision" type="CollisionShape3D" parent="Floor"]
-shape = BoxShape3D.new()
-scale = Vector3(24, 0.5, 24)
+shape = SubResource("FloorShape")
 
 [node name="Player" type="CharacterBody3D" parent="."]
 position = Vector3(0, 1, 5)
 script = ExtResource("2")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-shape = CapsuleShape3D.new()
+shape = SubResource("PlayerShape")
 
 [node name="BodyMesh" type="MeshInstance3D" parent="Player"]
-mesh = CapsuleMesh.new()
+mesh = SubResource("PlayerMesh")
 position = Vector3(0, 0.9, 0)
 
 [node name="CameraPivot" type="Node3D" parent="Player"]
@@ -54,17 +72,13 @@ spring_length = 4.0
 current = true
 
 [node name="Terminal" type="StaticBody3D" parent="."]
-position = Vector3(0, 0, -2)
+position = Vector3(0, 1.2, -2)
 
 [node name="TerminalMesh" type="MeshInstance3D" parent="Terminal"]
-mesh = BoxMesh.new()
-position = Vector3(0, 1.2, 0)
-scale = Vector3(1.5, 1.2, 0.35)
+mesh = SubResource("TerminalMesh")
 
 [node name="TerminalCollision" type="CollisionShape3D" parent="Terminal"]
-shape = BoxShape3D.new()
-position = Vector3(0, 1.2, 0)
-scale = Vector3(1.5, 1.2, 0.35)
+shape = SubResource("TerminalShape")
 
 [node name="TerminalLogic" type="Node" parent="Terminal"]
 script = ExtResource("3")
