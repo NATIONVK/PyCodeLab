@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: cyber-world-android-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android-apk:
     name: Export Android APK
@@ -55,6 +59,7 @@ jobs:
           echo "$CMDLINE_TOOLS" >> "$GITHUB_PATH"
           echo "Using Android SDK: $SDK_ROOT"
           "$SDKMANAGER" --version
+          adb start-server
 
       - name: Install Android SDK components
         shell: bash
@@ -103,10 +108,25 @@ jobs:
           fi
 
       - name: Export debug APK
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p build
-          godot --headless --path cyber-world --export-debug "Android" build/HackerProtocol-CyberWorld-debug.apk
-          test -s build/HackerProtocol-CyberWorld-debug.apk
+          set +e
+          godot --headless --verbose --path cyber-world --export-debug "Android" build/HackerProtocol-CyberWorld-debug.apk 2>&1 | tee /tmp/godot-export.log
+          GODOT_EXIT=${PIPESTATUS[0]}
+          set -e
+          if [ "$GODOT_EXIT" -ne 0 ]; then
+            echo "Godot Android export failed. Relevant diagnostics:"
+            grep -Ei "error|failed|missing|not found|invalid|keystore|sdk|template" /tmp/godot-export.log | tail -n 100 || true
+            exit "$GODOT_EXIT"
+          fi
+          if [ ! -s build/HackerProtocol-CyberWorld-debug.apk ]; then
+            echo "Godot returned success but the APK is missing or empty."
+            exit 1
+          fi
+          file build/HackerProtocol-CyberWorld-debug.apk
+          ls -lh build/HackerProtocol-CyberWorld-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
