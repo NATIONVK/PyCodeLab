@@ -27,6 +27,7 @@ func _add_box(pos: Vector3, size: Vector3, color: Color) -> void:
 
 func _build_hud() -> void:
     var hud := $UI/HUD
+    hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
     var title := Label.new()
     title.text = "HACKER PROTOCOL: CYBER WORLD     //     NATIONVK"
     title.position = Vector2(24, 18)
