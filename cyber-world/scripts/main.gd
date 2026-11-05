@@ -16,6 +16,7 @@ var credits := 250
 var xp := 0
 var research_points := 0
 var training_completed := false
+var research_scanned := false
 var inventory: Array[String] = ["Basic Laptop", "USB Toolkit"]
 
 func _ready() -> void:
@@ -238,7 +239,7 @@ func _open_mission_board() -> void:
         "   Reward: 100 XP + 100 Credits + Data Shard",
         "2. HQ EXPANSION — " + ("COMPLETED" if upgrade_level > 1 else "Upgrade your lab once"),
         "   Reward: Lab progression",
-        "3. RESEARCH INITIATIVE — " + str(research_points) + " Research Points",
+        "3. RESEARCH INITIATIVE — " + ("COMPLETED" if research_scanned else "IN PROGRESS"),
         "   Visit the AI Research station to earn research points.",
         "CURRENT PROFILE: Level %d | XP %d | Credits %d" % [upgrade_level, xp, credits]
     ]
@@ -272,6 +273,10 @@ func _on_station_interacted(station_id: String) -> void:
         "server_room":
             _open_panel("Server Room", "SERVER ROOM // STATUS", ["LOCAL SERVER: ONLINE", "SECURITY SIMULATION: READY", "Complete the Main Workstation training to unlock advanced server missions."])
         "ai_research":
+            if research_scanned:
+                _open_panel("AI Research", "NOVA AI // RESEARCH POD", ["Research scan already completed.", "Research Points: " + str(research_points)])
+                return
+            research_scanned = true
             research_points += 1
             if not inventory.has("NOVA Research Notes"):
                 inventory.append("NOVA Research Notes")
@@ -334,6 +339,7 @@ func _save_progress() -> void:
     config.set_value("profile", "xp", xp)
     config.set_value("profile", "research_points", research_points)
     config.set_value("profile", "training_completed", training_completed)
+    config.set_value("profile", "research_scanned", research_scanned)
     config.set_value("profile", "inventory", inventory)
     var error := config.save(SAVE_PATH)
     if error == OK:
@@ -354,6 +360,7 @@ func _load_progress() -> void:
     xp = maxi(0, int(config.get_value("profile", "xp", 0)))
     research_points = maxi(0, int(config.get_value("profile", "research_points", 0)))
     training_completed = bool(config.get_value("profile", "training_completed", false))
+    research_scanned = bool(config.get_value("profile", "research_scanned", false))
     var saved_inventory: Variant = config.get_value("profile", "inventory", ["Basic Laptop", "USB Toolkit"])
     inventory.clear()
     for saved_item in saved_inventory:
