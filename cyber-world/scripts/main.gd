@@ -194,10 +194,22 @@ func _upgrade_lab() -> void:
         _update_status("Maximum lab level reached")
         return
     upgrade_level += 1
-    var accent := THEME_COLORS[theme_index]
-    _add_box(Vector3(5.2 + float(upgrade_level - 2) * 1.65, 3.15, -5.42), Vector3(0.8, 0.08, 0.05), accent, true)
+    _rebuild_upgrade_visuals()
     _update_status("Lab upgraded")
     _save_progress()
+
+func _rebuild_upgrade_visuals() -> void:
+    for item in get_tree().get_nodes_in_group("lab_upgrade_visuals"):
+        item.queue_free()
+    var accent := THEME_COLORS[theme_index]
+    for index in range(upgrade_level - 1):
+        var strip := _add_box(
+            Vector3(5.2 + float(index) * 1.65, 3.15, -5.42),
+            Vector3(0.8, 0.08, 0.05),
+            accent,
+            true
+        )
+        strip.add_to_group("lab_upgrade_visuals")
 
 func _save_progress() -> void:
     var config := ConfigFile.new()
@@ -214,11 +226,13 @@ func _load_progress() -> void:
     var error := config.load(SAVE_PATH)
     if error != OK:
         _apply_lab_theme()
+        _rebuild_upgrade_visuals()
         _update_status("New lab profile")
         return
     theme_index = clampi(int(config.get_value("lab", "theme_index", 0)), 0, THEME_COLORS.size() - 1)
     upgrade_level = clampi(int(config.get_value("lab", "upgrade_level", 1)), 1, 5)
     _apply_lab_theme()
+    _rebuild_upgrade_visuals()
     _update_status("Progress loaded")
 
 func _update_status(message: String) -> void:
