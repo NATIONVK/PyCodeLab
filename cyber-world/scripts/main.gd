@@ -106,7 +106,7 @@ func _build_hud() -> void:
     hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
     var title := Label.new()
-    title.text = "HACKER PROTOCOL: CYBER WORLD  //  LAB v0.3.0"
+    title.text = "HACKER PROTOCOL: CYBER WORLD  //  LAB v0.4.0"
     title.position = Vector2(24, 18)
     title.add_theme_color_override("font_color", Color(0.25, 0.9, 1.0))
     hud.add_child(title)
