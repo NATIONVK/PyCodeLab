@@ -59,7 +59,6 @@ jobs:
           echo "$CMDLINE_TOOLS" >> "$GITHUB_PATH"
           echo "Using Android SDK: $SDK_ROOT"
           "$SDKMANAGER" --version
-          adb start-server
 
       - name: Install Android SDK components
         shell: bash
@@ -68,6 +67,14 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
           "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+          ADB="$ANDROID_HOME/platform-tools/adb"
+          if [ ! -x "$ADB" ]; then
+            echo "Android platform-tools installation did not provide adb: $ADB"
+            find "$ANDROID_HOME" -maxdepth 4 -type f -name adb -print || true
+            exit 1
+          fi
+          "$ADB" version
+          "$ADB" start-server
 
       - name: Install matching Godot export templates
         shell: bash
