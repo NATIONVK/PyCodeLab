@@ -39,7 +39,7 @@ A mobile-first 3D cyberpunk world prototype by **NATIONVK**.
 ## Lab menu
 - **Change Theme:** cycles Cyan, Violet and Emerald accent lighting
 - **Upgrade Lab:** advances the headquarters from level 1 to level 5
-- **Save Progress / Load Progress:** stores and restores the theme and upgrade level locally on the device
+- **Save Progress / Load Progress:** stores and restores the theme, upgrade level, XP, credits, research points, mission state and inventory locally on the device
 
 ## Build
 Open this folder in Godot 4.4.1 or compatible Godot 4.x with Android export templates and Android SDK configured. Select the Android preset and export a debug APK.
@@ -50,7 +50,7 @@ The GitHub Actions workflow at `.github/workflows/build-cyber-world.yml` locates
 All hacking is fictional, puzzle-based simulation contained inside the game. This prototype is not a real network intrusion tool.
 
 ## Roadmap
-1. Validate v0.4.0 project import and Android APK export
+1. Validate v0.4.0 project import, script parsing and Android APK export
 2. Add functional station-specific interactions and equipment inventory
 3. Build the first virtual cyberspace zone
 4. Create the first streamed NOVA City district
