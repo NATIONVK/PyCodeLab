@@ -1,8 +1,10 @@
 extends Node
 
 func open_terminal() -> void:
-    var root := get_tree().current_scene
-    var layer := root.get_node_or_null("UI")
+    var scene_root: Node = get_tree().current_scene
+    if scene_root == null:
+        return
+    var layer := scene_root.get_node_or_null("UI")
     if layer == null:
         return
     var panel := layer.get_node_or_null("HackingPanel")
@@ -34,9 +36,8 @@ func open_terminal() -> void:
     submit.pressed.connect(func():
         if answer.text.strip_edges() == "1-2-3-4":
             feedback.text = "ACCESS GRANTED — MISSION REWARD UNLOCKED"
-            var root := get_tree().current_scene
-            if root and root.has_method("_on_simulation_completed"):
-                root._on_simulation_completed()
+            if scene_root.has_method("_on_simulation_completed"):
+                scene_root._on_simulation_completed()
         else:
             feedback.text = "SIMULATION FAILED — TRY AGAIN"
     )
