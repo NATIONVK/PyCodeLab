@@ -73,6 +73,11 @@ func _try_interact() -> void:
     var hit := space.intersect_ray(query)
     if hit and hit.collider:
         var collider_node: Node = hit.collider as Node
+        if collider_node.has_meta("station_id"):
+            var root := get_tree().current_scene
+            if root and root.has_method("_on_station_interacted"):
+                root._on_station_interacted(str(collider_node.get_meta("station_id")))
+            return
         var terminal: Node = collider_node.get_node_or_null("TerminalLogic")
         if terminal:
             terminal.open_terminal()
