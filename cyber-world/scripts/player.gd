@@ -72,6 +72,7 @@ func _try_interact() -> void:
     query.exclude = [self]
     var hit := space.intersect_ray(query)
     if hit and hit.collider:
-        var terminal := hit.collider.get_node_or_null("TerminalLogic")
+        var collider_node: Node = hit.collider as Node
+        var terminal: Node = collider_node.get_node_or_null("TerminalLogic")
         if terminal:
             terminal.open_terminal()
