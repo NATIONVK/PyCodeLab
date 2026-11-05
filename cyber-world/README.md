@@ -2,7 +2,7 @@
 
 A mobile-first 3D cyberpunk open-world prototype by **NATIONVK**.
 
-## Current prototype (v0.1.0)
+## Current prototype (v0.2.0)
 - 3D lab blockout scene
 - Character movement, sprint and jump
 - On-screen Android joystick, jump, sprint and interact buttons
