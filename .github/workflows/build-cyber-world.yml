@@ -133,9 +133,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build
+          APK_PATH="$GITHUB_WORKSPACE/build/HackerProtocol-CyberWorld-debug.apk"
+          mkdir -p "$(dirname "$APK_PATH")"
+          test -d "$(dirname "$APK_PATH")"
           set +e
-          godot --headless --verbose --path cyber-world --export-debug "Android" build/HackerProtocol-CyberWorld-debug.apk 2>&1 | tee /tmp/godot-export.log
+          godot --headless --verbose --path cyber-world --export-debug "Android" "$APK_PATH" 2>&1 | tee /tmp/godot-export.log
           GODOT_EXIT=${PIPESTATUS[0]}
           set -e
           if [ "$GODOT_EXIT" -ne 0 ]; then
@@ -143,17 +145,17 @@ jobs:
             grep -Ei "error|failed|missing|not found|invalid|keystore|sdk|template" /tmp/godot-export.log | tail -n 100 || true
             exit "$GODOT_EXIT"
           fi
-          if [ ! -s build/HackerProtocol-CyberWorld-debug.apk ]; then
-            echo "Godot returned success but the APK is missing or empty."
+          if [ ! -s "$APK_PATH" ]; then
+            echo "Godot returned success but the APK is missing or empty: $APK_PATH"
             exit 1
           fi
-          file build/HackerProtocol-CyberWorld-debug.apk
-          ls -lh build/HackerProtocol-CyberWorld-debug.apk
+          file "$APK_PATH"
+          ls -lh "$APK_PATH"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: HackerProtocol-CyberWorld-debug-apk
-          path: build/HackerProtocol-CyberWorld-debug.apk
+          path: ${{ github.workspace }}/build/HackerProtocol-CyberWorld-debug.apk
           if-no-files-found: error
           retention-days: 14
